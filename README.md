@@ -1,7 +1,7 @@
 AndroidSimpleAR
 =======
 
-Simple AR demo for Android. Parameter is optimized for Google Glass.
+Simple AR demo for Android. Parameters are optimized for Google Glass.
 
 <img src="http://thorikawa.github.io/AndroidSimpleAR/img/ar_screenshot.png" />
 
