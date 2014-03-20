@@ -20,7 +20,6 @@
 #include "MarkerDetector.hpp"
 #include "Marker.hpp"
 #include "TinyLA.hpp"
-#include "DebugHelpers.hpp"
 
 MarkerDetector::MarkerDetector(CameraCalibration calibration)
     : m_minContourLengthAllowed(100)
@@ -36,12 +35,6 @@ MarkerDetector::MarkerDetector(CameraCalibration calibration)
         m_markerCorners3d.push_back(cv::Point3f(+0.5f,-0.5f,0));
         m_markerCorners3d.push_back(cv::Point3f(+0.5f,+0.5f,0));
         m_markerCorners3d.push_back(cv::Point3f(-0.5f,+0.5f,0));
-        /*
-        m_markerCorners3d.push_back(cv::Point3f(-0.5f,+0.5f,0));
-        m_markerCorners3d.push_back(cv::Point3f(+0.5f,+0.5f,0));
-        m_markerCorners3d.push_back(cv::Point3f(+0.5f,-0.5f,0));
-        m_markerCorners3d.push_back(cv::Point3f(-0.5f,-0.5f,0));
-        */
     }
     else
     {
@@ -55,12 +48,6 @@ MarkerDetector::MarkerDetector(CameraCalibration calibration)
     m_markerCorners2d.push_back(cv::Point2f(markerSize.width-1,0));
     m_markerCorners2d.push_back(cv::Point2f(markerSize.width-1,markerSize.height-1));
     m_markerCorners2d.push_back(cv::Point2f(0,markerSize.height-1));
-    /*
-    m_markerCorners2d.push_back(cv::Point2f(0,markerSize.height-1));
-    m_markerCorners2d.push_back(cv::Point2f(markerSize.width-1,markerSize.height-1));
-    m_markerCorners2d.push_back(cv::Point2f(markerSize.width-1,0));
-    m_markerCorners2d.push_back(cv::Point2f(0,0));
-    */
 }
 
 void MarkerDetector::processFrame(const cv::Mat& bgraMat, float scale)
@@ -117,14 +104,6 @@ bool MarkerDetector::findMarkers(const cv::Mat& bgraMat, std::vector<Marker>& de
 
     // Find is them are markers
     recognizeMarkers(m_grayscaleImage, detectedMarkers);
-
-    // Fix the coord difference between OpenCV and Unity
-    for (size_t i=0; i<detectedMarkers.size(); i++) {
-        Marker& m = detectedMarkers[i];
-        for (size_t k=0; k<m.points.size(); k++) {
-            m.points[k].y = m_grayscaleImage.rows - m.points[k].y;
-        }
-    }
 
     // Calculate their poses
     estimatePosition(detectedMarkers);
@@ -226,9 +205,8 @@ void MarkerDetector::findCandidates
         // All tests are passed. Save marker candidate:
         Marker m;
 
-        for (int i = 0; i<4; i++) {
+        for (int i = 0; i<4; i++)
             m.points.push_back( cv::Point2f(approxCurve[i].x,approxCurve[i].y) );
-        }
 
         // Sort the points in anti-clockwise order
         // Trace a line between the first and second point.
@@ -238,11 +216,8 @@ void MarkerDetector::findCandidates
 
         double o = (v1.x * v2.y) - (v1.y * v2.x);
 
-        if (o < 0.0) {
-        // if (o > 0.0) {
-            //if the third point is in the left side, then sort in anti-clockwise order
+        if (o < 0.0)		 //if the third point is in the left side, then sort in anti-clockwise order
             std::swap(m.points[1], m.points[3]);
-        }
 
         possibleMarkers.push_back(m);
     }
@@ -394,12 +369,13 @@ void MarkerDetector::estimatePosition(std::vector<Marker>& detectedMarkers)
     for (size_t i=0; i<detectedMarkers.size(); i++)
     {
         Marker& m = detectedMarkers[i];
+
         cv::Mat Rvec;
         cv::Mat_<float> Tvec;
-        cv::Mat raux, taux;
+        cv::Mat raux,taux;
         cv::solvePnP(m_markerCorners3d, m.points, camMatrix, distCoeff, raux, taux);
         raux.convertTo(Rvec, CV_32F);
-        taux.convertTo(Tvec, CV_32F);
+        taux.convertTo(Tvec ,CV_32F);
 
         cv::Mat_<float> rotMat(3,3); 
         cv::Rodrigues(Rvec, rotMat);
@@ -409,12 +385,54 @@ void MarkerDetector::estimatePosition(std::vector<Marker>& detectedMarkers)
         {
             for (int row=0; row<3; row++)
             {        
-                m.transformation.r().mat[row][col] = rotMat(row, col); // Copy rotation component
+                m.transformation.r().mat[row][col] = rotMat(row,col); // Copy rotation component
             }
             m.transformation.t().data[col] = Tvec(col); // Copy translation component
         }
 
+        std::cout << "=======" << std::endl;
+        cv::Mat_<float> pos(4,1);
+        pos(3, 0) = 1.0f;
+        cv::Mat_<float> transMat(4,4);
+        for (int r=0; r<4; r++) {
+            for (int c=0; c<4; c++) {
+                transMat(c,r) = m.transformation.getMat44().mat[r][c];
+            }
+        }
+
+        float fx = camMatrix.at<float>(0, 0);
+        float fy = camMatrix.at<float>(1, 1);
+        float cx = camMatrix.at<float>(0, 2);
+        float cy = camMatrix.at<float>(1, 2);
+
+        printf("camera: %f %f %f %f\n", fx, fy, cx, cy);
+
+        for (int i=0; i<m.points.size(); i++) {
+            std::cout << "===" << std::endl;
+            printf("%d\n", i);
+            printf("image coord: (%f, %f)\n", m.points[i].x, m.points[i].y);
+            pos(0, 0) = m_markerCorners3d[i].x;
+            pos(1, 0) = m_markerCorners3d[i].y;
+            pos(2, 0) = m_markerCorners3d[i].z;
+            // pos(0, 0) = m.points[i].x - 320;
+            // pos(1, 0) = m.points[i].y - 240;
+            cv::Mat_<float> x = transMat * pos;
+            // std::cout << x << std::endl;
+            printf("after apply transMat: ");
+            for (int r=0; r<4; r++) {
+                printf("%f, ", x(r, 0));
+            }
+            //printf("=> (%f, %f) ", x(0, 0) * 320 + 320, x(1,0) * 240 + 240);
+            float xx = x(0, 0);
+            float yy = x(1, 0);
+            float zz = x(2, 0);
+            printf("\n");
+            printf("after appling camera matrix: (%f, %f) ", (fx * xx + cx * zz) / zz, (fy * yy + cy * zz) / zz);
+            printf("\n");
+            std::cout << "===" << std::endl;
+        }
+
         // Since solvePnP finds camera location, w.r.t to marker pose, to get marker pose w.r.t to the camera we invert it.
-        // m.transformation = m.transformation.getInverted();
+        m.transformation = m.transformation.getInverted();
     }
 }

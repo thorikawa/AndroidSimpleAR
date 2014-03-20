@@ -3,22 +3,18 @@
 #include <BGRAVideoFrame.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/contrib/detection_based_tracker.hpp>
+#include <android/log.h>
 
 #include <string>
 #include <vector>
 
 #define CONSOLE 0
 
-#ifdef __ANDROID__
-#include <android/log.h>
-#define LOG_TAG "SimpleAR/Native"
 #if CONSOLE
+#define LOG_TAG "SimpleAR/Native"
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__);
 #else
 #define LOGD(...)
-#endif
-#else
-#define LOGD(...) printf(__VA_ARGS__);
 #endif
 
 using namespace std;
@@ -38,6 +34,7 @@ void vector_Transformation_to_Mat(vector<Transformation>& v_tr, Mat& mat) {
 			LOGD("%f, %f, %f, %f", m44.mat[r][0], m44.mat[r][1], m44.mat[r][2], m44.mat[r][3]);
 		}
 		for (int j = 0; j < 16; j++) {
+			// LOGD("%f", m44.data[j]);
 			mat.at<float>(i, j) = m44.data[j];
 		}
 	}

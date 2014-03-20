@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="view_width">640px</dimen>
+    <dimen name="view_height">360px</dimen>
+
+</resources>

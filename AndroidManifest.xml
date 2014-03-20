@@ -29,6 +29,9 @@
     <uses-feature
         android:name="android.hardware.camera.front.autofocus"
         android:required="false" />
+    <uses-feature
+        android:glEsVersion="0x00010000"
+        android:required="true" />
 
     <application
         android:name=".SimpleArApplication"
