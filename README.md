@@ -4,14 +4,15 @@ AndroidSimpleAR
 Simple AR demo.
 
 ## Requirement
-* Android SDK
-* Android NDK
+* Android SDK <https://developer.android.com/sdk/>
+* Android NDK <https://developer.android.com/tools/sdk/ndk/>
+* OpenCV Android SDK <http://sourceforge.net/projects/opencvlibrary/files/opencv-android/>
 
 ## Get it started
 
 * set up environment
 ```
-$ export OPENCV_ANDROID_SDK_HOME=/Users/poly/workspace/OpenCV-2.4.6-android-sdk/
+$ export OPENCV_ANDROID_SDK_HOME=<PATH_TO_OPENCV_ANDROID_SDK>
 ```
 * Build
 ```
@@ -20,7 +21,7 @@ $ ndk-build
 $ and clean debug install
 ```
 * Recognize marker
-Use [this marker](https://github.com/thorikawa/AndroidSimpleAR/blob/master/jni/MarkerDetection/marker.png).
+Use [this image](https://github.com/thorikawa/AndroidSimpleAR/blob/master/jni/MarkerDetection/marker.png).
 
 ## License
 
