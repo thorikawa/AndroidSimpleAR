@@ -23,8 +23,7 @@ $ ndk-build
 $ and clean debug install
 ```
 * Recognize marker
-
-Use [this image](https://github.com/thorikawa/AndroidSimpleAR/blob/master/jni/MarkerDetection/marker.png).
+** Use [this image](https://github.com/thorikawa/AndroidSimpleAR/blob/master/jni/MarkerDetection/marker.png).
 
 ## License
 
