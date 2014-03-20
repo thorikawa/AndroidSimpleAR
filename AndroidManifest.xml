@@ -53,12 +53,6 @@
             </intent-filter>
 
             <meta-data
-                android:name="android.app.lib_name"
-                android:value="unity" />
-            <meta-data
-                android:name="unityplayer.ForwardNativeEventsToDalvik"
-                android:value="true" />
-            <meta-data
                 android:name="com.google.android.glass.VoiceTrigger"
                 android:resource="@xml/voice_commands" />
         </activity>
