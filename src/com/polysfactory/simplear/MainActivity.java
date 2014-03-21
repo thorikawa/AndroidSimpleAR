@@ -149,6 +149,8 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
     private static ByteBuffer allocateByteBufferDirect(byte[] data) {
         ByteBuffer vbb = ByteBuffer.allocateDirect(data.length * Byte.SIZE / 8);
         vbb.order(ByteOrder.nativeOrder());
+        vbb.put(data);
+        vbb.flip();
         return vbb;
     }
 
