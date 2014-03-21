@@ -73,7 +73,6 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
 
         mGLView = new GLSurfaceView(getApplication());
         mGLView.setZOrderOnTop(true);
-        mGLView.setZOrderMediaOverlay(true);
         mGLView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
         mGLView.setRenderer(new GLRenderer());
         mGLView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
@@ -118,7 +117,6 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
         Mat frame = inputFrame.rgba();
         if (mMarkerDetector != null) {
             List<Mat> transformations = new ArrayList<Mat>();
-            System.out.println(mCameraView.getScale());
             float scale = mScale == 0.0f ? 1.0f : mScale;
             mMarkerDetector.findMarkers(frame, transformations, scale);
             int count = transformations.size();
