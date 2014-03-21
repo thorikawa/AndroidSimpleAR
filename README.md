@@ -14,6 +14,7 @@ Simple AR demo for Android. Parameters are optimized for Google Glass.
 
 * set up environment
 ```
+### expample: export OPENCV_ANDROID_SDK_HOME=/Users/thorikawa/workspace/OpenCV-2.4.8-android-sdk/sdk/native/jni
 $ export OPENCV_ANDROID_SDK_HOME=<PATH_TO_OPENCV_ANDROID_SDK>
 ```
 * Build
