@@ -9,7 +9,6 @@ public class SimpleArApplication extends Application {
         if (!OpenCVLoader.initDebug()) {
             // Handle initialization error
         } else {
-            System.loadLibrary("simple_ar_marker");
             System.loadLibrary("simple_ar");
         }
     }
