@@ -112,6 +112,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
     public void onCameraViewStopped() {
     }
 
+    @Override
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
 
         Mat frame = inputFrame.rgba();
