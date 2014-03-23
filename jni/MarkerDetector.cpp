@@ -64,37 +64,18 @@ void MarkerDetector::processFrame(const cv::Mat& bgraMat, float scale)
     }
 }
 
-//void MarkerDetector::processFrame(const BGRAVideoFrame& frame)
-//{
-//    std::vector<Marker> markers;
-//    findMarkers(frame, markers);
-//
-//    m_transformations.clear();
-//    for (size_t i=0; i<markers.size(); i++)
-//    {
-//        m_transformations.push_back(markers[i].transformation);
-//    }
-//}
-
 const std::vector<Transformation>& MarkerDetector::getTransformations() const
 {
     return m_transformations;
 }
 
-
-//bool MarkerDetector::findMarkers(const BGRAVideoFrame& frame, std::vector<Marker>& detectedMarkers)
-//{
-//    cv::Mat bgraMat(frame.height, frame.width, CV_8UC4, frame.data, frame.stride);
-//    return this::findMarkers(bgraMat, detectedMarkers);
-//}
-
 bool MarkerDetector::findMarkers(const cv::Mat& bgraMat, std::vector<Marker>& detectedMarkers)
 {
     // Convert the image to grayscale
-    prepareImage(bgraMat, m_grayscaleImage);
+	cv::cvtColor(bgraMat, m_grayscaleImage, CV_BGRA2GRAY);
 
     // Make it binary
-    performThreshold(m_grayscaleImage, m_thresholdImg);
+    cv::threshold(m_grayscaleImage, m_thresholdImg, 127, 255, cv::THRESH_BINARY_INV);
 
     // Detect contours
     findContours(m_thresholdImg, m_contours, m_grayscaleImage.cols / 5);
@@ -113,32 +94,6 @@ bool MarkerDetector::findMarkers(const cv::Mat& bgraMat, std::vector<Marker>& de
     return false;
 }
 
-void MarkerDetector::prepareImage(const cv::Mat& bgraMat, cv::Mat& grayscale) const
-{
-    // Convert to grayscale
-    cv::cvtColor(bgraMat, grayscale, CV_BGRA2GRAY);
-}
-
-void MarkerDetector::performThreshold(const cv::Mat& grayscale, cv::Mat& thresholdImg) const
-{
-    cv::threshold(grayscale, thresholdImg, 127, 255, cv::THRESH_BINARY_INV);
-
-    /*
-    cv::adaptiveThreshold(grayscale,   // Input image
-    thresholdImg,// Result binary image
-    255,         // 
-    cv::ADAPTIVE_THRESH_GAUSSIAN_C, //
-    cv::THRESH_BINARY_INV, //
-    7, //
-    7  //
-    );
-    */
-
-#ifdef SHOW_DEBUG_IMAGES
-    cv::showAndSave("Threshold image", thresholdImg);
-#endif
-}
-
 void MarkerDetector::findContours(cv::Mat& thresholdImg, ContoursVector& contours, int minContourPointsAllowed) const
 {
     ContoursVector allContours;
@@ -153,15 +108,6 @@ void MarkerDetector::findContours(cv::Mat& thresholdImg, ContoursVector& contour
             contours.push_back(allContours[i]);
         }
     }
-
-#ifdef SHOW_DEBUG_IMAGES
-    {
-        cv::Mat contoursImage(thresholdImg.size(), CV_8UC1);
-        contoursImage = cv::Scalar(0);
-        cv::drawContours(contoursImage, contours, -1, cv::Scalar(255), 2, CV_AA);
-        cv::showAndSave("Contours", contoursImage);
-    }
-#endif
 }
 
 void MarkerDetector::findCandidates
@@ -293,17 +239,6 @@ void MarkerDetector::recognizeMarkers(const cv::Mat& grayscale, std::vector<Mark
         // Transform image to get a canonical marker image
         cv::warpPerspective(grayscale, canonicalMarkerImage,  markerTransform, markerSize);
 
-#ifdef SHOW_DEBUG_IMAGES
-        {
-            cv::Mat markerImage = grayscale.clone();
-            marker.drawContour(markerImage);
-            cv::Mat markerSubImage = markerImage(cv::boundingRect(marker.points));
-
-            cv::showAndSave("Source marker" + ToString(i),           markerSubImage);
-            cv::showAndSave("Marker " + ToString(i) + " after warp", canonicalMarkerImage);
-        }
-#endif
-
         int nRotations;
         int id = Marker::getMarkerId(canonicalMarkerImage, nRotations);
         if (id !=- 1)
@@ -345,20 +280,6 @@ void MarkerDetector::recognizeMarkers(const cv::Mat& grayscale, std::vector<Mark
             }      
         }
     }
-
-#if SHOW_DEBUG_IMAGES
-    {
-        cv::Mat markerCornersMat(grayscale.size(), grayscale.type());
-        markerCornersMat = cv::Scalar(0);
-
-        for (size_t i=0; i<goodMarkers.size(); i++)
-        {
-            goodMarkers[i].drawContour(markerCornersMat, cv::Scalar(255));    
-        }
-
-        cv::showAndSave("Markers refined edges", grayscale * 0.5 + markerCornersMat);
-    }
-#endif
 
     detectedMarkers = goodMarkers;
 }
