@@ -1,6 +1,6 @@
-#include <simplear_marker_jni.h>
-#include <MarkerDetector.hpp>
-#include <BGRAVideoFrame.h>
+#include "simplear_jni.h"
+#include "MarkerDetector.hpp"
+#include "BGRAVideoFrame.h"
 #include <opencv2/core/core.hpp>
 #include <opencv2/contrib/detection_based_tracker.hpp>
 #include <android/log.h>
