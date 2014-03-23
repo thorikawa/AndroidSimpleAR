@@ -20,17 +20,13 @@ import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.RelativeLayout;
-import android.widget.RelativeLayout.LayoutParams;
 
 import com.polysfactory.simplear.jni.NativeMarkerDetector;
 
 public class MainActivity extends Activity implements CvCameraViewListener2 {
 
-    private ViewGroup mContainer;
     private JavaCameraViewEx mCameraView;
     private GLSurfaceView mGLView;
     private NativeMarkerDetector mMarkerDetector;
@@ -60,25 +56,20 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
 
         setContentView(R.layout.marker_tracking);
 
-        mContainer = (ViewGroup) findViewById(R.id.container);
-
         mWidth = getResources().getDimensionPixelSize(R.dimen.view_width);
         mHeight = getResources().getDimensionPixelSize(R.dimen.view_height);
 
-        mCameraView = (JavaCameraViewEx) findViewById(R.id.fd_activity_surface_view);
+        mCameraView = (JavaCameraViewEx) findViewById(R.id.camera_view);
         mCameraView.setCameraIndex(CameraBridgeViewBase.CAMERA_ID_ANY);
         mCameraView.setCvCameraViewListener(this);
         mCameraView.setMaxFrameSize(mWidth, mHeight);
         mCameraView.disableView();
 
-        mGLView = new GLSurfaceView(getApplication());
+        mGLView = (GLSurfaceView) findViewById(R.id.gl_view);
         mGLView.setZOrderOnTop(true);
         mGLView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
         mGLView.setRenderer(new GLRenderer());
         mGLView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-        LayoutParams lp = new LayoutParams(mWidth, mHeight);
-        lp.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-        mContainer.addView(mGLView, lp);
     }
 
     @Override

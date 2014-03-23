@@ -5,7 +5,13 @@
     android:layout_height="match_parent" >
 
     <org.opencv.android.JavaCameraViewEx
-        android:id="@+id/fd_activity_surface_view"
+        android:id="@+id/camera_view"
+        android:layout_width="@dimen/view_width"
+        android:layout_height="@dimen/view_height"
+        android:layout_centerInParent="true" />
+
+    <android.opengl.GLSurfaceView
+        android:id="@+id/gl_view"
         android:layout_width="@dimen/view_width"
         android:layout_height="@dimen/view_height"
         android:layout_centerInParent="true" />
