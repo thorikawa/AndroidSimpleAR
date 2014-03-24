@@ -114,9 +114,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
             int count = transformations.size();
             if (count > 0) {
                 Mat mat = transformations.get(0);
-                synchronized (this) {
-                    mat.get(0, 0, mTransformation);
-                }
+                mat.get(0, 0, mTransformation);
                 mFindMarker = true;
             } else {
                 mFindMarker = false;
@@ -165,7 +163,9 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
             gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
-            drawAR(gl);
+            if (mFindMarker) {
+                drawAR(gl);
+            }
         }
 
         private void drawAR(GL10 gl) {
@@ -182,36 +182,32 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
             gl.glPushMatrix();
             gl.glLineWidth(5.0f);
 
-            if (mFindMarker) {
-                synchronized (this) {
-                    gl.glLoadMatrixf(allocateFloatBufferDirect(mTransformation));
-                }
+            gl.glLoadMatrixf(allocateFloatBufferDirect(mTransformation));
 
-                gl.glVertexPointer(2, GL10.GL_FLOAT, 0, squareVertices);
-                gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
-                gl.glColorPointer(4, GL10.GL_UNSIGNED_BYTE, 0, squareColors);
-                gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
+            gl.glVertexPointer(2, GL10.GL_FLOAT, 0, squareVertices);
+            gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+            gl.glColorPointer(4, GL10.GL_UNSIGNED_BYTE, 0, squareColors);
+            gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
 
-                gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
-                gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
+            gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
+            gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
 
-                float scale = 0.5f;
-                gl.glScalef(scale, scale, scale);
+            float scale = 0.5f;
+            gl.glScalef(scale, scale, scale);
 
-                gl.glTranslatef(0f, 0f, 0.1f);
+            gl.glTranslatef(0f, 0f, 0.1f);
 
-                gl.glColor4f(1f, 0f, 0f, 1f);
-                gl.glVertexPointer(3, GL10.GL_FLOAT, 0, lineX);
-                gl.glDrawArrays(GL10.GL_LINES, 0, 2);
+            gl.glColor4f(1f, 0f, 0f, 1f);
+            gl.glVertexPointer(3, GL10.GL_FLOAT, 0, lineX);
+            gl.glDrawArrays(GL10.GL_LINES, 0, 2);
 
-                gl.glColor4f(0f, 1f, 0f, 1f);
-                gl.glVertexPointer(3, GL10.GL_FLOAT, 0, lineY);
-                gl.glDrawArrays(GL10.GL_LINES, 0, 2);
+            gl.glColor4f(0f, 1f, 0f, 1f);
+            gl.glVertexPointer(3, GL10.GL_FLOAT, 0, lineY);
+            gl.glDrawArrays(GL10.GL_LINES, 0, 2);
 
-                gl.glColor4f(0f, 0f, 1f, 1f);
-                gl.glVertexPointer(3, GL10.GL_FLOAT, 0, lineZ);
-                gl.glDrawArrays(GL10.GL_LINES, 0, 2);
-            }
+            gl.glColor4f(0f, 0f, 1f, 1f);
+            gl.glVertexPointer(3, GL10.GL_FLOAT, 0, lineZ);
+            gl.glDrawArrays(GL10.GL_LINES, 0, 2);
 
             gl.glPopMatrix();
             gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);

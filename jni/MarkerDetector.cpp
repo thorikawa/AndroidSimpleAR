@@ -28,21 +28,10 @@ MarkerDetector::MarkerDetector(CameraCalibration calibration)
     cv::Mat(3,3, CV_32F, const_cast<float*>(&calibration.getIntrinsic().data[0])).copyTo(camMatrix);
     cv::Mat(4,1, CV_32F, const_cast<float*>(&calibration.getDistorsion().data[0])).copyTo(distCoeff);
 
-    bool centerOrigin = true;
-    if (centerOrigin)
-    {
-        m_markerCorners3d.push_back(cv::Point3f(-0.5f,-0.5f,0));
-        m_markerCorners3d.push_back(cv::Point3f(+0.5f,-0.5f,0));
-        m_markerCorners3d.push_back(cv::Point3f(+0.5f,+0.5f,0));
-        m_markerCorners3d.push_back(cv::Point3f(-0.5f,+0.5f,0));
-    }
-    else
-    {
-        m_markerCorners3d.push_back(cv::Point3f(0,0,0));
-        m_markerCorners3d.push_back(cv::Point3f(1,0,0));
-        m_markerCorners3d.push_back(cv::Point3f(1,1,0));
-        m_markerCorners3d.push_back(cv::Point3f(0,1,0));    
-    }
+	m_markerCorners3d.push_back(cv::Point3f(-0.5f,-0.5f,0));
+	m_markerCorners3d.push_back(cv::Point3f(+0.5f,-0.5f,0));
+	m_markerCorners3d.push_back(cv::Point3f(+0.5f,+0.5f,0));
+	m_markerCorners3d.push_back(cv::Point3f(-0.5f,+0.5f,0));
 
     m_markerCorners2d.push_back(cv::Point2f(0,0));
     m_markerCorners2d.push_back(cv::Point2f(markerSize.width-1,0));
@@ -112,9 +101,9 @@ void MarkerDetector::findContours(cv::Mat& thresholdImg, ContoursVector& contour
 
 void MarkerDetector::findCandidates
 (
-    const ContoursVector& contours, 
+    const ContoursVector& contours,
     std::vector<Marker>& detectedMarkers
-) 
+)
 {
     std::vector<cv::Point>  approxCurve;
     std::vector<Marker>     possibleMarkers;
@@ -139,7 +128,7 @@ void MarkerDetector::findCandidates
 
         for (int i = 0; i < 4; i++)
         {
-            cv::Point side = approxCurve[i] - approxCurve[(i+1)%4];            
+            cv::Point side = approxCurve[i] - approxCurve[(i+1)%4];
             float squaredSideLength = side.dot(side);
             minDist = std::min(minDist, squaredSideLength);
         }
@@ -169,11 +158,11 @@ void MarkerDetector::findCandidates
     }
 
 
-    // Remove these elements which corners are too close to each other.  
+    // Remove these elements which corners are too close to each other.
     // First detect candidates for removal:
     std::vector< std::pair<int,int> > tooNearCandidates;
     for (size_t i=0;i<possibleMarkers.size();i++)
-    { 
+    {
         const Marker& m1 = possibleMarkers[i];
 
         //calculate the average distance of each corner to the nearest corner of the other marker candidate
@@ -195,7 +184,7 @@ void MarkerDetector::findCandidates
             {
                 tooNearCandidates.push_back(std::pair<int,int>(i,j));
             }
-        }				
+        }
     }
 
     // Mark for removal the element of the pair with smaller perimeter
@@ -249,7 +238,7 @@ void MarkerDetector::recognizeMarkers(const cv::Mat& grayscale, std::vector<Mark
 
             goodMarkers.push_back(marker);
         }
-    }  
+    }
 
     // Refine marker corners using sub pixel accuracy
     if (goodMarkers.size() > 0)
@@ -257,8 +246,8 @@ void MarkerDetector::recognizeMarkers(const cv::Mat& grayscale, std::vector<Mark
         std::vector<cv::Point2f> preciseCorners(4 * goodMarkers.size());
 
         for (size_t i=0; i<goodMarkers.size(); i++)
-        {  
-            const Marker& marker = goodMarkers[i];      
+        {
+            const Marker& marker = goodMarkers[i];
 
             for (int c = 0; c <4; c++)
             {
@@ -272,12 +261,12 @@ void MarkerDetector::recognizeMarkers(const cv::Mat& grayscale, std::vector<Mark
         // Copy refined corners position back to markers
         for (size_t i=0; i<goodMarkers.size(); i++)
         {
-            Marker& marker = goodMarkers[i];      
+            Marker& marker = goodMarkers[i];
 
-            for (int c=0;c<4;c++) 
+            for (int c=0;c<4;c++)
             {
                 marker.points[c] = preciseCorners[i*4 + c];
-            }      
+            }
         }
     }
 
@@ -298,14 +287,14 @@ void MarkerDetector::estimatePosition(std::vector<Marker>& detectedMarkers)
         raux.convertTo(Rvec, CV_32F);
         taux.convertTo(Tvec ,CV_32F);
 
-        cv::Mat_<float> rotMat(3,3); 
+        cv::Mat_<float> rotMat(3,3);
         cv::Rodrigues(Rvec, rotMat);
 
         // Copy to transformation matrix
         for (int col=0; col<3; col++)
         {
             for (int row=0; row<3; row++)
-            {        
+            {
                 m.transformation.r().mat[row][col] = rotMat(row,col); // Copy rotation component
             }
             m.transformation.t().data[col] = Tvec(col); // Copy translation component
