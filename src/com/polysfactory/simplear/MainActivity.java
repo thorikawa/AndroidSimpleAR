@@ -170,15 +170,14 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
 
         private void drawAR(GL10 gl) {
 
-            gl.glMatrixMode(GL10.GL_MODELVIEW);
-            gl.glLoadIdentity();
-
             gl.glDepthMask(true);
             gl.glEnable(GL10.GL_DEPTH_TEST);
 
             gl.glPushMatrix();
             gl.glLineWidth(5.0f);
 
+            gl.glMatrixMode(GL10.GL_MODELVIEW);
+            gl.glLoadIdentity();
             gl.glLoadMatrixf(allocateFloatBufferDirect(mTransformation));
 
             gl.glVertexPointer(2, GL10.GL_FLOAT, 0, squareVertices);
