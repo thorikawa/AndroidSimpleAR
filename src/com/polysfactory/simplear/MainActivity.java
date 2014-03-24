@@ -176,9 +176,6 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
             gl.glDepthMask(true);
             gl.glEnable(GL10.GL_DEPTH_TEST);
 
-            gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
-            gl.glEnableClientState(GL10.GL_NORMAL_ARRAY);
-
             gl.glPushMatrix();
             gl.glLineWidth(5.0f);
 

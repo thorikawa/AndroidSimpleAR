@@ -51,7 +51,7 @@ public:
 protected:
 
   //! Main marker detection routine
-  bool findMarkers(const cv::Mat& brgaMat, std::vector<Marker>& detectedMarkers);
+  void findMarkers(const cv::Mat& brgaMat, std::vector<Marker>& detectedMarkers);
 
   //! Converts image to grayscale
   void prepareImage(const cv::Mat& bgraMat, cv::Mat& grayscale) const;

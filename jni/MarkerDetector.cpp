@@ -58,7 +58,7 @@ const std::vector<Transformation>& MarkerDetector::getTransformations() const
     return m_transformations;
 }
 
-bool MarkerDetector::findMarkers(const cv::Mat& bgraMat, std::vector<Marker>& detectedMarkers)
+void MarkerDetector::findMarkers(const cv::Mat& bgraMat, std::vector<Marker>& detectedMarkers)
 {
     // Convert the image to grayscale
 	cv::cvtColor(bgraMat, m_grayscaleImage, CV_BGRA2GRAY);
@@ -77,10 +77,6 @@ bool MarkerDetector::findMarkers(const cv::Mat& bgraMat, std::vector<Marker>& de
 
     // Calculate their poses
     estimatePosition(detectedMarkers);
-
-    //sort by id
-    std::sort(detectedMarkers.begin(), detectedMarkers.end());
-    return false;
 }
 
 void MarkerDetector::findContours(cv::Mat& thresholdImg, ContoursVector& contours, int minContourPointsAllowed) const
