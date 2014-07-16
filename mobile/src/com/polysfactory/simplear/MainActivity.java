@@ -41,9 +41,9 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
     // camera matrix will be [fx, 0, cx], [0, fy, cy], [0, 0, 1]
 
     // Google Glass
-    private static final float[] mCameraParameters = {357.658935546875f, 357.658935546875f, 319.5f, 179.5f};
+    // private static final float[] mCameraParameters = {357.658935546875f, 357.658935546875f, 319.5f, 179.5f};
     // Galaxy S5
-    // private static final float[] mCameraParameters = {1617.964244716695f, 1617.964244716695f, 959.5f, 539.5f};
+    private static final float[] mCameraParameters = {1617.964244716695f, 1617.964244716695f, 959.5f, 539.5f};
 
     // OpenGL constants
     private static final FloatBuffer squareVertices = allocateFloatBufferDirect(new float[]{-0.5f, -0.5f, 0.5f,
