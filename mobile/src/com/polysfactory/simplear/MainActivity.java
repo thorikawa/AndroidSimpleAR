@@ -1,20 +1,5 @@
 package com.polysfactory.simplear;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-
-import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
-import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
-import org.opencv.android.JavaCameraViewEx;
-import org.opencv.core.Mat;
-
 import android.app.Activity;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
@@ -25,27 +10,49 @@ import android.view.WindowManager;
 
 import com.polysfactory.simplear.jni.NativeMarkerDetector;
 
+import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
+import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
+import org.opencv.android.JavaCameraViewEx;
+import org.opencv.core.Mat;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
+
 public class MainActivity extends Activity implements CvCameraViewListener2 {
 
+    private static final int MAX_MERKERS = 10;
     private JavaCameraViewEx mCameraView;
     private GLSurfaceView mGLView;
     private NativeMarkerDetector mMarkerDetector;
-    private boolean mFindMarker = false;
-    private float[] mTransformation = new float[16];
+    private float[][] mTransformation = new float[MAX_MERKERS][16];
+    private int mMarkerCount;
     private int mWidth;
     private int mHeight;
     private float mScale;
 
-    private static final float[] mCameraParameters = { 357.658935546875f, 357.658935546875f, 319.5f, 179.5f };
+    // camera parameter array corresponding to [fx, fy, cx, cy]
+    // camera matrix will be [fx, 0, cx], [0, fy, cy], [0, 0, 1]
+
+    // Google Glass
+    private static final float[] mCameraParameters = {357.658935546875f, 357.658935546875f, 319.5f, 179.5f};
+    // Galaxy S5
+    // private static final float[] mCameraParameters = {1617.964244716695f, 1617.964244716695f, 959.5f, 539.5f};
 
     // OpenGL constants
-    private static final FloatBuffer squareVertices = allocateFloatBufferDirect(new float[] { -0.5f, -0.5f, 0.5f,
-            -0.5f, -0.5f, 0.5f, 0.5f, 0.5f });
-    private static final ByteBuffer squareColors = allocateByteBufferDirect(new byte[] { (byte) 255, (byte) 255, 0,
-            (byte) 255, 0, (byte) 255, (byte) 255, (byte) 255, 0, 0, 0, 0, (byte) 255, 0, (byte) 255, (byte) 255 });
-    private static final FloatBuffer lineX = allocateFloatBufferDirect(new float[] { 0f, 0f, 0f, 1f, 0f, 0f });
-    private static final FloatBuffer lineY = allocateFloatBufferDirect(new float[] { 0f, 0f, 0f, 0f, 1f, 0f });
-    private static final FloatBuffer lineZ = allocateFloatBufferDirect(new float[] { 0f, 0f, 0f, 0f, 0f, 1f });
+    private static final FloatBuffer squareVertices = allocateFloatBufferDirect(new float[]{-0.5f, -0.5f, 0.5f,
+            -0.5f, -0.5f, 0.5f, 0.5f, 0.5f});
+    private static final ByteBuffer squareColors = allocateByteBufferDirect(new byte[]{(byte) 255, (byte) 255, 0,
+            (byte) 255, 0, (byte) 255, (byte) 255, (byte) 255, 0, 0, 0, 0, (byte) 255, 0, (byte) 255, (byte) 255});
+    private static final FloatBuffer lineX = allocateFloatBufferDirect(new float[]{0f, 0f, 0f, 1f, 0f, 0f});
+    private static final FloatBuffer lineY = allocateFloatBufferDirect(new float[]{0f, 0f, 0f, 0f, 1f, 0f});
+    private static final FloatBuffer lineZ = allocateFloatBufferDirect(new float[]{0f, 0f, 0f, 0f, 0f, 1f});
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -111,13 +118,12 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
             List<Mat> transformations = new ArrayList<Mat>();
             float scale = mScale == 0.0f ? 1.0f : mScale;
             mMarkerDetector.findMarkers(frame, transformations, scale);
-            int count = transformations.size();
-            if (count > 0) {
-                Mat mat = transformations.get(0);
-                mat.get(0, 0, mTransformation);
-                mFindMarker = true;
-            } else {
-                mFindMarker = false;
+            mMarkerCount = transformations.size();
+            if (mMarkerCount > 0) {
+                for (int i = 0; i < Math.min(MAX_MERKERS, mMarkerCount); i++) {
+                    Mat mat = transformations.get(i);
+                    mat.get(0, 0, mTransformation[i]);
+                }
             }
         }
 
@@ -163,7 +169,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
             gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
-            if (mFindMarker) {
+            if (mMarkerCount > 0) {
                 drawAR(gl);
             }
         }
@@ -177,33 +183,36 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
             gl.glLineWidth(5.0f);
 
             gl.glMatrixMode(GL10.GL_MODELVIEW);
-            gl.glLoadIdentity();
-            gl.glLoadMatrixf(allocateFloatBufferDirect(mTransformation));
 
-            gl.glVertexPointer(2, GL10.GL_FLOAT, 0, squareVertices);
-            gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
-            gl.glColorPointer(4, GL10.GL_UNSIGNED_BYTE, 0, squareColors);
-            gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
+            for (int i = 0; i < mMarkerCount; i++) {
+                gl.glLoadIdentity();
+                gl.glLoadMatrixf(allocateFloatBufferDirect(mTransformation[i]));
 
-            gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
-            gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
+                gl.glVertexPointer(2, GL10.GL_FLOAT, 0, squareVertices);
+                gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+                gl.glColorPointer(4, GL10.GL_UNSIGNED_BYTE, 0, squareColors);
+                gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
 
-            float scale = 0.5f;
-            gl.glScalef(scale, scale, scale);
+                gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
+                gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
 
-            gl.glTranslatef(0f, 0f, 0.1f);
+                float scale = 0.5f;
+                gl.glScalef(scale, scale, scale);
 
-            gl.glColor4f(1f, 0f, 0f, 1f);
-            gl.glVertexPointer(3, GL10.GL_FLOAT, 0, lineX);
-            gl.glDrawArrays(GL10.GL_LINES, 0, 2);
+                gl.glTranslatef(0f, 0f, 0.1f);
 
-            gl.glColor4f(0f, 1f, 0f, 1f);
-            gl.glVertexPointer(3, GL10.GL_FLOAT, 0, lineY);
-            gl.glDrawArrays(GL10.GL_LINES, 0, 2);
+                gl.glColor4f(1f, 0f, 0f, 1f);
+                gl.glVertexPointer(3, GL10.GL_FLOAT, 0, lineX);
+                gl.glDrawArrays(GL10.GL_LINES, 0, 2);
 
-            gl.glColor4f(0f, 0f, 1f, 1f);
-            gl.glVertexPointer(3, GL10.GL_FLOAT, 0, lineZ);
-            gl.glDrawArrays(GL10.GL_LINES, 0, 2);
+                gl.glColor4f(0f, 1f, 0f, 1f);
+                gl.glVertexPointer(3, GL10.GL_FLOAT, 0, lineY);
+                gl.glDrawArrays(GL10.GL_LINES, 0, 2);
+
+                gl.glColor4f(0f, 0f, 1f, 1f);
+                gl.glVertexPointer(3, GL10.GL_FLOAT, 0, lineZ);
+                gl.glDrawArrays(GL10.GL_LINES, 0, 2);
+            }
 
             gl.glPopMatrix();
             gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
