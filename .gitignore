@@ -12,6 +12,7 @@
 bin/
 gen/
 obj/
+build/
 
 # JNI generated files
 *.so
@@ -38,3 +39,5 @@ proguard/
 # OS X
 .DS_Store
 
+# Gradle
+.gradle
